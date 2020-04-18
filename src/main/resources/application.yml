@@ -1,0 +1,7 @@
+spring:
+  profiles:
+    active: dev
+
+mybatis:
+  type-aliases-package: com.example.examination.entity
+  mapper-locations: classpath:mapper/*Mapper.xml
