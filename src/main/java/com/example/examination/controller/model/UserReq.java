@@ -1,4 +1,4 @@
-package com.example.examination.view;
+package com.example.examination.controller.model;
 
 import lombok.Data;
 
@@ -7,5 +7,4 @@ public class UserReq {
     private Integer pageNo;
     private Integer pageSize;
     private String username;
-    private String nickname;
 }

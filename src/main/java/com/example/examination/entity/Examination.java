@@ -7,11 +7,13 @@ import javax.persistence.*;
 @Data
 @Table
 @Entity
-public class User {
+public class Examination {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String username;
-    private String password;
-    private String role;
+    private Integer creatorId;
+    private String content;
+    private String answer;
+    private Integer difficulty;
+    private Integer type;
 }

@@ -2,6 +2,13 @@ spring:
   profiles:
     active: dev
 
+  jpa:
+    database: mysql
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      ddl-auto: update
+
 mybatis:
   type-aliases-package: com.example.examination.entity
   mapper-locations: classpath:mapper/*Mapper.xml

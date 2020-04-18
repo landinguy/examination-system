@@ -1,10 +1,10 @@
 package com.example.examination.controller;
 
+import com.example.examination.controller.model.UserReq;
 import com.example.examination.entity.User;
 import com.example.examination.service.UserService;
 import com.example.examination.util.Consts;
 import com.example.examination.util.Result;
-import com.example.examination.view.UserReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +19,8 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("login")
-    public Result login(@RequestParam("username") String username, @RequestParam("password") String password) {
+    public Result login(String username, String password) {
         try {
-            log.info("username#{},password#{}", username, password);
             return userService.checkAndLogin(username, password);
         } catch (Exception e) {
             return Result.builder().code(-1).msg("系统异常").build();
@@ -39,35 +38,52 @@ public class UserController {
 
     @PostMapping("addAccount")
     public Result add(@RequestBody User user) {
+        log.info("添加或修改用户,user#{}", user);
+        Result.ResultBuilder builder = Result.builder();
         try {
-            log.info("add or update user,params#{}", user);
-            return userService.add(user);
+            userService.add(user);
         } catch (Exception e) {
-            log.error("add or update user error#{}", e);
-            return Result.builder().code(-1).msg("添加或修改用户失败").build();
+            log.error("添加或修改用户失败,user#{}", user);
+            builder.code(-1).msg("添加或修改用户失败");
         }
+        return builder.build();
     }
 
     @GetMapping("updatePwd")
     public Result updatePwd(String oldPassword, String newPassword) {
+        log.info("修改密码,oldPassword#{},newPassword#{}", oldPassword, newPassword);
         try {
-            log.info("update password,oldPassword#{},newPassword#{}", oldPassword, newPassword);
             return userService.updatePassword(oldPassword, newPassword);
         } catch (Exception e) {
-            log.error("update password error#{}", e);
+            log.error("修改密码失败", e);
             return Result.builder().code(-1).msg("修改密码失败").build();
         }
     }
 
+    @GetMapping("updatePassword")
+    public Result updatePassword(Integer id, String password) {
+        log.info("修改密码,id#{},password#{}", id, password);
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            userService.updatePassword(id, password);
+        } catch (Exception e) {
+            log.error("修改密码失败", e);
+            builder.code(-1).msg("修改密码失败").build();
+        }
+        return builder.build();
+    }
+
     @PostMapping("getAccount")
     public Result getAccount(@RequestBody UserReq req) {
+        log.info("查询用户,req#{}", req);
+        Result.ResultBuilder builder = Result.builder();
         try {
-            log.info("getAccount,params#{}", req);
-            return userService.select(req);
+            builder.data(userService.select(req));
         } catch (Exception e) {
-            log.error("getAccount error#{}", e);
-            return Result.builder().code(-1).msg("查询用户失败").build();
+            log.error("查询用户失败", e);
+            builder.code(-1).msg("查询用户失败").build();
         }
+        return builder.build();
     }
 
     @RequestMapping("deleteAccount")
