@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.examination.dao.PublishMapper">
+  <resultMap id="BaseResultMap" type="com.example.examination.entity.Publish">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="answer_ts" jdbcType="BIGINT" property="answerTs" />
+    <result column="limit_answer_time" jdbcType="BIT" property="limitAnswerTime" />
+    <result column="paper_id" jdbcType="INTEGER" property="paperId" />
+    <result column="publish_ts" jdbcType="VARCHAR" property="publishTs" />
+    <result column="publisher_id" jdbcType="INTEGER" property="publisherId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, answer_ts, limit_answer_time, paper_id, publish_ts, publisher_id
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from publish
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from publish
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.example.examination.entity.Publish">
+    insert into publish (id, answer_ts, limit_answer_time, 
+      paper_id, publish_ts, publisher_id
+      )
+    values (#{id,jdbcType=INTEGER}, #{answerTs,jdbcType=BIGINT}, #{limitAnswerTime,jdbcType=BIT}, 
+      #{paperId,jdbcType=INTEGER}, #{publishTs,jdbcType=VARCHAR}, #{publisherId,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.example.examination.entity.Publish">
+    insert into publish
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="answerTs != null">
+        answer_ts,
+      </if>
+      <if test="limitAnswerTime != null">
+        limit_answer_time,
+      </if>
+      <if test="paperId != null">
+        paper_id,
+      </if>
+      <if test="publishTs != null">
+        publish_ts,
+      </if>
+      <if test="publisherId != null">
+        publisher_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="answerTs != null">
+        #{answerTs,jdbcType=BIGINT},
+      </if>
+      <if test="limitAnswerTime != null">
+        #{limitAnswerTime,jdbcType=BIT},
+      </if>
+      <if test="paperId != null">
+        #{paperId,jdbcType=INTEGER},
+      </if>
+      <if test="publishTs != null">
+        #{publishTs,jdbcType=VARCHAR},
+      </if>
+      <if test="publisherId != null">
+        #{publisherId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.example.examination.entity.Publish">
+    update publish
+    <set>
+      <if test="answerTs != null">
+        answer_ts = #{answerTs,jdbcType=BIGINT},
+      </if>
+      <if test="limitAnswerTime != null">
+        limit_answer_time = #{limitAnswerTime,jdbcType=BIT},
+      </if>
+      <if test="paperId != null">
+        paper_id = #{paperId,jdbcType=INTEGER},
+      </if>
+      <if test="publishTs != null">
+        publish_ts = #{publishTs,jdbcType=VARCHAR},
+      </if>
+      <if test="publisherId != null">
+        publisher_id = #{publisherId,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.example.examination.entity.Publish">
+    update publish
+    set answer_ts = #{answerTs,jdbcType=BIGINT},
+      limit_answer_time = #{limitAnswerTime,jdbcType=BIT},
+      paper_id = #{paperId,jdbcType=INTEGER},
+      publish_ts = #{publishTs,jdbcType=VARCHAR},
+      publisher_id = #{publisherId,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -16,7 +16,8 @@ public class ExaminationSystemApplicationTests {
 
     @Test
     public void contextLoads() {
-
+        LocalDateTime localDateTime = LocalDateTime.now().withNano(0);
+        log.info("###{}", localDateTime);
     }
 
 }

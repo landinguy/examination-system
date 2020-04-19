@@ -3,10 +3,8 @@ package com.example.examination.controller.model;
 import lombok.Data;
 
 @Data
-public class ExaminationReq {
-    private Integer type;
-    private Integer difficulty;
-    private Integer creatorId;
+public class PaperReq {
     private Integer pageNo;
     private Integer pageSize;
+    private Integer creatorId;
 }

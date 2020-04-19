@@ -16,6 +16,7 @@
         select count(*) from examination
         <where>
             <if test="type!=null">type = #{type}</if>
+            <if test="difficulty!=null">and difficulty = #{difficulty}</if>
             <if test="creatorId!=null">and creator_id = #{creatorId}</if>
         </where>
     </select>
@@ -25,6 +26,7 @@
         from examination
         <where>
             <if test="type!=null">type = #{type}</if>
+            <if test="difficulty!=null">and difficulty = #{difficulty}</if>
             <if test="creatorId!=null">and creator_id = #{creatorId}</if>
         </where>
         order by id desc
