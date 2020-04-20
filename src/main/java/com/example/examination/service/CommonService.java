@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -22,6 +23,10 @@ public class CommonService {
 
     public String getUsername() {
         return (String) Optional.ofNullable(httpSession.getAttribute(Consts.SEESION_UNAME)).orElse(null);
+    }
+
+    public String getDateTime() {
+        return LocalDateTime.now().withNano(0).toString().replace("T", " ");
     }
 
 }

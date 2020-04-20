@@ -3,13 +3,11 @@ package com.example.examination.controller;
 import com.example.examination.controller.model.PaperCreateReq;
 import com.example.examination.controller.model.PaperPublishReq;
 import com.example.examination.controller.model.PaperReq;
+import com.example.examination.controller.model.PublishReq;
 import com.example.examination.service.PaperService;
 import com.example.examination.util.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -47,11 +45,36 @@ public class PaperController {
         return builder.build();
     }
 
+    @PostMapping("publish/record")
+    public Result publishRecord(@RequestBody PublishReq req) {
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            builder.data(paperService.getPublishRecord(req));
+        } catch (Exception e) {
+            log.error("查询发布记录失败", e);
+            builder.code(-1).msg("查询发布记录失败");
+        }
+        return builder.build();
+    }
+
     @PostMapping("get")
     public Result get(@RequestBody PaperReq req) {
         Result.ResultBuilder builder = Result.builder();
         try {
             builder.data(paperService.get(req));
+        } catch (Exception e) {
+            log.error("查询试卷失败", e);
+            builder.code(-1).msg("查询试卷失败").build();
+        }
+        return builder.build();
+    }
+
+    @PostMapping("get/{paperId}")
+    public Result get(@PathVariable Integer paperId) {
+        log.info("查询试卷,paperId#{}", paperId);
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            builder.data(paperService.getByPaperId(paperId));
         } catch (Exception e) {
             log.error("查询试卷失败", e);
             builder.code(-1).msg("查询试卷失败").build();
