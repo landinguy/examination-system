@@ -3,11 +3,10 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
     <!-- home -->
-    <classPathEntry location="C:\maven_repository\mysql\mysql-connector-java\5.1.46\mysql-connector-java-5.1.46.jar"/>
+    <!--    <classPathEntry location="C:\maven_repository\mysql\mysql-connector-java\5.1.46\mysql-connector-java-5.1.46.jar"/>-->
 
     <!-- company -->
-    <!--<classPathEntry-->
-    <!--location="D:\Application\mavenRepository\mysql\mysql-connector-java\5.1.46\mysql-connector-java-5.1.46.jar"/>-->
+    <classPathEntry location="D:\mavenRepo\mysql\mysql-connector-java\5.1.46\mysql-connector-java-5.1.46.jar"/>
 
     <context id="context1">
         <!-- 去掉自动生成的注释 -->
@@ -36,13 +35,17 @@
         <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
         <!--               selectByExampleQueryId="false">-->
         <!--        </table>-->
-        <table tableName="paper" domainObjectName="Paper" enableCountByExample="false"
+        <!--        <table tableName="paper" domainObjectName="Paper" enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
+        <!--               selectByExampleQueryId="false">-->
+        <!--        </table>-->
+        <!--        <table tableName="publish" domainObjectName="Publish" enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
+        <!--               selectByExampleQueryId="false">-->
+        <!--        </table>-->
+        <table tableName="reply" domainObjectName="Reply" enableCountByExample="false"
                enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
                selectByExampleQueryId="false">
         </table>
-<!--        <table tableName="publish" domainObjectName="Publish" enableCountByExample="false"-->
-<!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
-<!--               selectByExampleQueryId="false">-->
-<!--        </table>-->
     </context>
 </generatorConfiguration>
