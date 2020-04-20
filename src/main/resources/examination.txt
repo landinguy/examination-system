@@ -32,7 +32,7 @@ CREATE TABLE `examination` (
 
 /*Data for the table `examination` */
 
-insert  into `examination`(`id`,`answer`,`content`,`creator_id`,`difficulty`,`type`) values (1,'A','“但愿人长久，千里共婵娟”，其中婵娟指的是什么？\nA、 月亮     B、姻缘',2,1,1),(2,'C','“爆竹声中一岁除，春风送暖入屠苏”，这里的“屠苏”指的是：\nA、苏州   B、房屋     C、酒   D、庄稼',2,2,1),(4,'C','7、“床前明月光”是李白的千古名句，其中 “床”指的是什么？\nA、窗户     B、卧具     C、井上的围栏',4,5,1),(5,'错误','天气热，狗狗常常会伸出舌头，是因为它饿了。',4,1,2),(6,'为伊消得人憔悴','将诗句补充完整。衣带渐宽终不悔，______________。',4,3,3),(7,'落霞与孤鹜齐飞','将诗句补充完成。____________，秋水共长天一色。',2,3,3),(8,'错误','“聚沙成塔”与“细水长流”意思是一样的。',2,3,2),(9,'错误','疫情期间，出门去人多的地方可以不戴口罩。',2,1,2),(10,'上穷碧落下黄泉','将诗句补充完整。_____________，两处茫茫皆不见。',2,4,3),(11,'同是天涯沦落人','将诗句补充完整。____________，相逢何必曾相识。',2,4,3),(12,'B','“月上柳梢头，人约黄昏后”描写的是哪个传统节日？\nA、中秋节   B、元宵节     C、端午节 D、 七夕节',2,5,1);
+insert  into `examination`(`id`,`answer`,`content`,`creator_id`,`difficulty`,`type`) values (1,'A','“但愿人长久，千里共婵娟”，其中婵娟指的是什么？\nA、 月亮     B、姻缘',2,1,1),(2,'C','“爆竹声中一岁除，春风送暖入屠苏”，这里的“屠苏”指的是：\nA、苏州   B、房屋     C、酒   D、庄稼',2,2,1),(4,'C','7、“床前明月光”是李白的千古名句，其中 “床”指的是什么？\nA、窗户     B、卧具     C、井上的围栏',4,5,1),(5,'错','天气热，狗狗常常会伸出舌头，是因为它饿了。',4,1,2),(6,'为伊消得人憔悴','将诗句补充完整。衣带渐宽终不悔，______________。',4,3,3),(7,'落霞与孤鹜齐飞','将诗句补充完成。____________，秋水共长天一色。',2,3,3),(8,'错','“聚沙成塔”与“细水长流”意思是一样的。',2,3,2),(9,'错','疫情期间，出门去人多的地方可以不戴口罩。',2,1,2),(10,'上穷碧落下黄泉','将诗句补充完整。_____________，两处茫茫皆不见。',2,4,3),(11,'同是天涯沦落人','将诗句补充完整。____________，相逢何必曾相识。',2,4,3),(12,'B','“月上柳梢头，人约黄昏后”描写的是哪个传统节日？\nA、中秋节   B、元宵节     C、端午节 D、 七夕节',2,5,1);
 
 /*Table structure for table `paper` */
 
@@ -69,7 +69,27 @@ CREATE TABLE `publish` (
 
 /*Data for the table `publish` */
 
-insert  into `publish`(`id`,`answer_ts`,`limit_answer_time`,`paper_id`,`publish_ts`,`publisher_id`) values (4,1800000,'',4,'2020-04-19 23:18:17',2),(5,1800000,'',3,'2020-04-19 23:30:42',2);
+insert  into `publish`(`id`,`answer_ts`,`limit_answer_time`,`paper_id`,`publish_ts`,`publisher_id`) values (4,30,'',4,'2020-04-19 23:18:17',2),(5,30,'',3,'2020-04-19 23:30:42',2);
+
+/*Table structure for table `reply` */
+
+DROP TABLE IF EXISTS `reply`;
+
+CREATE TABLE `reply` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `answer` varchar(255) DEFAULT NULL,
+  `correct` varchar(255) DEFAULT NULL,
+  `error` varchar(255) DEFAULT NULL,
+  `paper_id` int(11) DEFAULT NULL,
+  `publish_id` int(11) DEFAULT NULL,
+  `submit_ts` varchar(255) DEFAULT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+/*Data for the table `reply` */
+
+insert  into `reply`(`id`,`answer`,`correct`,`error`,`paper_id`,`publish_id`,`submit_ts`,`user_id`) values (1,'{\"1\":\"A\",\"2\":\"C\",\"7\":\"aaa\",\"10\":\"aaa\",\"11\":\"qaa\",\"12\":\"B\"}','1,12,2','11,7,10',4,4,'2020-04-20 20:08:04',3);
 
 /*Table structure for table `user` */
 
