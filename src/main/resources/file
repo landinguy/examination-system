@@ -1,38 +1,31 @@
-package com.example.examination.controller.model;
+package com.example.examination.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.*;
 
 @Data
-public class PublishReq {
-    private Integer pageNo;
-    private Integer pageSize;
-    private Integer publisherId;
+@Table
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private String username;
+    @Builder.Default
+    private String password = "666666";
+    private String role;
 }
 
 
-package com.example.examination.controller.model;
 
-import lombok.Data;
-
-@Data
-public class ReplyCreateReq {
-    private Integer paperId;
-    private Integer publishId;
-    private String answer;
-}
-
-package com.example.examination.controller.model;
-
-import lombok.Data;
-
-@Data
-public class ReplyReq {
-    private Integer pageNo;
-    private Integer pageSize;
-    private Integer userId;//答题人id
-    private Integer paperId;
-}
-
+--------------------------
 
 package com.example.examination.entity;
 
@@ -43,227 +36,24 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-/**
- * 答题记录
- */
 @Data
 @Table
 @Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Reply {
+public class Class {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private Integer paperId;//试卷id
-    private Integer publishId;//发布记录id
-    private Integer userId;//答题人id
-    private String submitTs;//试卷提交时间
-    private String correct;//正确题id
-    private String error;//错误题id
-    private String answer;//答案
-}
-
-
-package com.example.examination.controller;
-
-import com.example.examination.controller.model.ReplyCreateReq;
-import com.example.examination.controller.model.ReplyReq;
-import com.example.examination.service.ReplyService;
-import com.example.examination.util.Result;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Resource;
-
-@Slf4j
-@RestController
-@RequestMapping("reply")
-public class ReplyController {
-    @Resource
-    private ReplyService replyService;
-
-    @PostMapping("save")
-    public Result save(@RequestBody ReplyCreateReq req) {
-        log.info("保存答题内容,req#{}", req);
-        Result.ResultBuilder builder = Result.builder();
-        try {
-            replyService.save(req);
-        } catch (Exception e) {
-            log.error("保存答题内容失败", e);
-            builder.code(-1).msg("保存答题内容失败");
-        }
-        return builder.build();
-    }
-
-    @PostMapping("get")
-    public Result get(@RequestBody ReplyReq req) {
-        Result.ResultBuilder builder = Result.builder();
-        try {
-            builder.data(replyService.get(req));
-        } catch (Exception e) {
-            log.error("查询答题记录失败", e);
-            builder.code(-1).msg("查询答题记录失败").build();
-        }
-        return builder.build();
-    }
-
-}
-
-
-
-package com.example.examination.dao;
-
-import com.example.examination.controller.model.ReplyReq;
-import com.example.examination.entity.Reply;
-
-import java.util.List;
-
-public interface ReplyMapper {
-    int deleteByPrimaryKey(Integer id);
-
-    int insert(Reply record);
-
-    int insertSelective(Reply record);
-
-    Reply selectByPrimaryKey(Integer id);
-
-    int updateByPrimaryKeySelective(Reply record);
-
-    int updateByPrimaryKey(Reply record);
-
-    int count(ReplyReq req);
-
-    List<Reply> select(ReplyReq req);
-}
-
-
-package com.example.examination.service;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-import com.example.examination.controller.model.ReplyCreateReq;
-import com.example.examination.controller.model.ReplyReq;
-import com.example.examination.dao.ExaminationMapper;
-import com.example.examination.dao.PaperMapper;
-import com.example.examination.dao.ReplyMapper;
-import com.example.examination.entity.Reply;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-@Slf4j
-@Service
-public class ReplyService {
-    @Resource
-    private PaperMapper paperMapper;
-    @Resource
-    private CommonService commonService;
-    @Resource
-    private UserService userService;
-    @Resource
-    private ExaminationMapper examinationMapper;
-    @Resource
-    private ReplyMapper replyMapper;
-
-    public void save(ReplyCreateReq req) {
-        List<String> correct = new ArrayList<>();
-        List<String> error = new ArrayList<>();
-        Optional.ofNullable(req.getAnswer()).ifPresent(answer -> {
-            Map<String, String> map = JSON.parseObject(answer, new TypeReference<Map<String, String>>() {
-            });
-            map.forEach((id, value) ->
-                    Optional.ofNullable(examinationMapper.selectByPrimaryKey(Integer.valueOf(id))).ifPresent(it -> {
-                        if (value.equals(it.getAnswer())) correct.add(id);
-                        else error.add(id);
-                    })
-            );
-        });
-        Reply build = Reply.builder().paperId(req.getPaperId()).publishId(req.getPublishId()).answer(req.getAnswer()).userId(commonService.getUserId())
-                .submitTs(commonService.getDateTime()).correct(String.join(",", correct)).error(String.join(",", error)).build();
-        replyMapper.insertSelective(build);
-    }
-
-
-    public Object get(ReplyReq req) {
-        if (req.getPageNo() == null) req.setPageNo(1);
-        if (req.getPageSize() == null) req.setPageSize(10);
-        Integer userId = commonService.getUserId();
-        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
-            String role = it.getRole();
-            if (role.equals("STUDENT") || role.equals("INTERVIEWER")) req.setUserId(userId);
-        });
-        log.info("查询答题记录,req#{}", req);
-        Integer total = replyMapper.count(req);
-        List<JSONObject> list = replyMapper.select(req).stream().map(it -> {
-            JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
-            Optional.ofNullable(userService.getById(it.getUserId())).ifPresent(user -> jo.put("username", user.getUsername()));
-            Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> jo.put("title", paper.getTitle()));
-            jo.put("correctNum", Stream.of(it.getCorrect().split(",")).count());
-            jo.put("errorNum", Stream.of(it.getError().split(",")).count());
-            return jo;
-        }).collect(Collectors.toList());
-        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
-    }
-
-}
-
-
-----------
-package com.example.examination.service;
-
-import com.example.examination.util.Consts;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
-import java.time.LocalDateTime;
-import java.util.Optional;
-
-/**
- * @author landing guy
- * @date 2020/4/18
- */
-@Service
-public class CommonService {
-    @Resource
-    private HttpSession httpSession;
-
-    public Integer getUserId() {
-        return (Integer) Optional.ofNullable(httpSession.getAttribute(Consts.SEESION_UID)).orElse(null);
-    }
-
-    public String getUsername() {
-        return (String) Optional.ofNullable(httpSession.getAttribute(Consts.SEESION_UNAME)).orElse(null);
-    }
-
-    public String getDateTime() {
-        return LocalDateTime.now().withNano(0).toString().replace("T", " ");
-    }
-
+    private String classname;
 }
 
 
 
 package com.example.examination.controller;
 
-import com.example.examination.controller.model.PaperCreateReq;
-import com.example.examination.controller.model.PaperPublishReq;
-import com.example.examination.controller.model.PaperReq;
-import com.example.examination.controller.model.PublishReq;
-import com.example.examination.service.PaperService;
+import com.example.examination.service.ClassService;
 import com.example.examination.util.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -272,247 +62,288 @@ import javax.annotation.Resource;
 
 @Slf4j
 @RestController
-@RequestMapping("paper")
-public class PaperController {
-
+@RequestMapping("class")
+public class ClassController {
     @Resource
-    private PaperService paperService;
+    private ClassService classService;
 
-    @PostMapping("save")
-    public Result save(@RequestBody PaperCreateReq req) {
-        log.info("保存试卷,req#{}", req);
+    @GetMapping("save")
+    public Result save(String classname) {
+        log.info("保存班级,classname#{}", classname);
         Result.ResultBuilder builder = Result.builder();
         try {
-            paperService.save(req);
+            return classService.save(classname);
         } catch (Exception e) {
-            log.error("保存试卷失败", e);
-            builder.code(-1).msg("保存试卷失败");
+            log.error("保存班级失败", e);
+            builder.code(-1).msg("保存班级失败");
         }
         return builder.build();
     }
 
-    @PostMapping("publish")
-    public Result publish(@RequestBody PaperPublishReq req) {
-        log.info("发布试卷,req#{}", req);
+    @GetMapping("get")
+    public Result get() {
         Result.ResultBuilder builder = Result.builder();
         try {
-            paperService.publish(req);
+            builder.data(classService.get());
         } catch (Exception e) {
-            log.error("发布试卷失败", e);
-            builder.code(-1).msg("发布试卷失败");
+            log.error("查询班级失败", e);
+            builder.code(-1).msg("查询班级失败").build();
         }
         return builder.build();
     }
 
-    @PostMapping("publish/record")
-    public Result publishRecord(@RequestBody PublishReq req) {
+    @GetMapping("student/save")
+    public Result saveStudent(Integer classId, String name) {
+        log.info("添加学生,classId#{},name#{}", classId, name);
         Result.ResultBuilder builder = Result.builder();
         try {
-            builder.data(paperService.getPublishRecord(req));
+            classService.saveStudent(classId, name);
         } catch (Exception e) {
-            log.error("查询发布记录失败", e);
-            builder.code(-1).msg("查询发布记录失败");
+            log.error("添加学生失败", e);
+            builder.code(-1).msg("添加学生失败").build();
         }
         return builder.build();
     }
 
-    @PostMapping("get")
-    public Result get(@RequestBody PaperReq req) {
+    @GetMapping("student/get/{classId}")
+    public Result getClassStudent(@PathVariable Integer classId) {
+        log.info("查询班级学生,classId#{}", classId);
         Result.ResultBuilder builder = Result.builder();
         try {
-            builder.data(paperService.get(req));
+            builder.data(classService.getClassStudent(classId));
         } catch (Exception e) {
-            log.error("查询试卷失败", e);
-            builder.code(-1).msg("查询试卷失败").build();
+            log.error("查询班级学生失败", e);
+            builder.code(-1).msg("查询班级学生失败").build();
         }
         return builder.build();
     }
 
-    @PostMapping("get/{paperId}")
-    public Result get(@PathVariable Integer paperId) {
-        log.info("查询试卷,paperId#{}", paperId);
+    @GetMapping("student/delete/{id}")
+    public Result deleteStudent(@PathVariable Integer id) {
+        log.info("删除学生,id#{}", id);
         Result.ResultBuilder builder = Result.builder();
         try {
-            builder.data(paperService.getByPaperId(paperId));
+            classService.deleteStudent(id);
         } catch (Exception e) {
-            log.error("查询试卷失败", e);
-            builder.code(-1).msg("查询试卷失败").build();
+            log.error("删除学生失败", e);
+            builder.code(-1).msg("删除学生失败").build();
         }
         return builder.build();
     }
-//
-//    @RequestMapping("delete/{id}")
-//    public Result deleteAccount(@PathVariable Integer id) {
-//        log.info("删除试题,id#{}", id);
-//        Result.ResultBuilder builder = Result.builder();
-//        try {
-//            examinationService.delete(id);
-//        } catch (Exception e) {
-//            log.error("删除试题失败", e);
-//            builder.code(-1).msg("删除试题失败").build();
-//        }
-//        return builder.build();
-//    }
 
+    @PostMapping("apply")
+    public Result apply(Integer userId, Integer classId) {
+        log.info("班级申请,userId#{},classId#{}", userId, classId);
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            classService.apply(userId, classId);
+        } catch (Exception e) {
+            log.error("班级申请失败", e);
+            builder.code(-1).msg("班级申请失败").build();
+        }
+        return builder.build();
+    }
+
+}
+
+
+package com.example.examination.dao;
+
+import com.example.examination.entity.Class;
+
+import java.util.List;
+
+public interface ClassMapper {
+    int deleteByPrimaryKey(Integer id);
+
+    int insert(Class record);
+
+    int insertSelective(Class record);
+
+    Class selectByPrimaryKey(Integer id);
+
+    int updateByPrimaryKeySelective(Class record);
+
+    int updateByPrimaryKey(Class record);
+
+    Class selectByClassname(String classname);
+
+    List<Class> select();
 }
 
 
 
 package com.example.examination.service;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.example.examination.controller.model.PaperCreateReq;
-import com.example.examination.controller.model.PaperPublishReq;
-import com.example.examination.controller.model.PaperReq;
-import com.example.examination.controller.model.PublishReq;
-import com.example.examination.dao.ExaminationMapper;
-import com.example.examination.dao.PaperMapper;
-import com.example.examination.dao.PublishMapper;
-import com.example.examination.entity.Examination;
-import com.example.examination.entity.Paper;
-import com.example.examination.entity.Publish;
+import com.example.examination.dao.ClassMapper;
+import com.example.examination.dao.UidCidMapper;
+import com.example.examination.dao.UserMapper;
+import com.example.examination.entity.Class;
+import com.example.examination.entity.UidCid;
+import com.example.examination.entity.User;
+import com.example.examination.util.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
-public class PaperService {
-    @Resource
-    private PaperMapper paperMapper;
+public class ClassService {
     @Resource
     private CommonService commonService;
     @Resource
-    private UserService userService;
+    private ClassMapper classMapper;
     @Resource
-    private PublishMapper publishMapper;
+    private UidCidMapper uidCidMapper;
     @Resource
-    private ExaminationMapper examinationMapper;
+    private UserMapper userMapper;
 
-    public void save(PaperCreateReq req) {
-        Paper build = Paper.builder().title(req.getTitle()).createTs(LocalDate.now().toString()).status(1)
-                .creatorId(commonService.getUserId()).examinations(String.join(",", req.getExaminations())).build();
-        paperMapper.insertSelective(build);
-    }
-
-    public void publish(PaperPublishReq req) {
-        Integer paperId = req.getPaperId();
-        String datetime = LocalDateTime.now().withNano(0).toString().replace("T", " ");
-        Publish build = Publish.builder().paperId(paperId).publisherId(commonService.getUserId())
-                .publishTs(datetime).limitAnswerTime(req.isLimitAnswerTime()).answerTs(req.getAnswerTs()).build();
-        int i = publishMapper.insertSelective(build);
-        if (i > 0) {
-            Paper paper = Paper.builder().id(paperId).status(2).publishTs(datetime).build();
-            paperMapper.updateByPrimaryKeySelective(paper);
+    public Result save(String classname) {
+        Result.ResultBuilder builder = Result.builder();
+        Class select = classMapper.selectByClassname(classname);
+        if (select != null) {
+            builder.code(-1).msg("班级已存在，请换个班级名！");
+        } else {
+            classMapper.insertSelective(Class.builder().classname(classname).build());
         }
+        return builder.build();
     }
 
-    public Object get(PaperReq req) {
-        if (req.getPageNo() == null) req.setPageNo(1);
-        if (req.getPageSize() == null) req.setPageSize(10);
-        Integer userId = commonService.getUserId();
-        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
-            String role = it.getRole();
-            if (role.equals("TEACHER") || role.equals("COMPANY")) req.setCreatorId(userId);
+
+    public Object get() {
+        return classMapper.select();
+    }
+
+    public void apply(Integer userId, Integer classId) {
+        uidCidMapper.insertSelective(UidCid.builder().uid(userId).cid(classId).build());
+    }
+
+    public Object getClassStudent(Integer classId) {
+        List<JSONObject> list = new ArrayList<>();
+        uidCidMapper.selectByCid(classId).forEach(uidCid ->
+                Optional.ofNullable(userMapper.selectByPrimaryKey(uidCid.getUid())).ifPresent(user -> {
+                    if (user.getRole().equals("STUDENT")) {
+                        JSONObject jo = new JSONObject();
+                        jo.put("id", user.getId());
+                        jo.put("name", user.getUsername());
+                        list.add(jo);
+                    }
+                }));
+        return list;
+    }
+
+    public void saveStudent(Integer classId, String name) {
+        User user = User.builder().username(name).role("STUDENT").build();
+        userMapper.insertSelective(user);
+        Optional.ofNullable(user.getId()).ifPresent(userId -> {
+            log.info("userId#{}", userId);
+            UidCid uidCid = UidCid.builder().uid(userId).cid(classId).build();
+            uidCidMapper.insertSelective(uidCid);
         });
-        log.info("查询试卷,req#{}", req);
-        Integer total = paperMapper.count(req);
-        List<JSONObject> list = paperMapper.select(req).stream().map(it -> {
-            JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
-            List<Examination> examinations = new ArrayList<>();
-            Stream.of(it.getExaminations().split(",")).map(Integer::valueOf).forEach(id ->
-                    Optional.ofNullable(examinationMapper.selectByPrimaryKey(id)).ifPresent(examinations::add)
-            );
-            jo.put("examinations", examinations);
-            return jo;
-        }).collect(Collectors.toList());
-        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
     }
 
-    public JSONObject getByPaperId(Integer paperId) {
-        final JSONObject jo = new JSONObject();
-        Optional.ofNullable(paperMapper.selectByPrimaryKey(paperId)).ifPresent(it -> {
-            List<Examination> examinations = new ArrayList<>();
-            Stream.of(it.getExaminations().split(",")).map(Integer::valueOf).forEach(id ->
-                    Optional.ofNullable(examinationMapper.selectByPrimaryKey(id)).ifPresent(examinations::add)
-            );
-            jo.putAll(JSON.parseObject(JSON.toJSONString(it)));
-            jo.put("examinations", examinations);
-        });
-        return jo;
+    public void deleteStudent(Integer id) {
+        uidCidMapper.deleteByPrimaryKey(id);
     }
-
-    public Object getPublishRecord(PublishReq req) {
-        if (req.getPageNo() == null) req.setPageNo(1);
-        if (req.getPageSize() == null) req.setPageSize(10);
-        Integer userId = commonService.getUserId();
-        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
-            String role = it.getRole();
-            if (role.equals("TEACHER") || role.equals("COMPANY")) req.setPublisherId(userId);
-        });
-        log.info("查询发布记录,req#{}", req);
-        int total = publishMapper.count(req);
-        List<JSONObject> list = publishMapper.select(req).stream().map(it -> {
-            JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
-            Optional.ofNullable(userService.getById(it.getPublisherId())).ifPresent(user -> jo.put("username", user.getUsername()));
-            Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> jo.put("title", paper.getTitle()));
-            return jo;
-        }).collect(Collectors.toList());
-        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
-    }
-
-
-//    public JSONObject get(ExaminationReq req) {
-//        if (req.getPageNo() == null) req.setPageNo(1);
-//        if (req.getPageSize() == null) req.setPageSize(10);
-//        Integer userId = commonService.getUserId();
-//        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
-//            String role = it.getRole();
-//            if (role.equals("TEACHER") || role.equals("COMPANY")) req.setCreatorId(userId);
-//        });
-//        log.info("查询试题,req#{}", req);
-//        Integer total = examinationMapper.count(req);
-//        List<Examination> list = examinationMapper.select(req);
-//        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
-//    }
-//
-//    public void delete(Integer id) {
-//        examinationMapper.deleteByPrimaryKey(id);
-//    }
 }
 
 
 
+package com.example.examination.controller;
+
+import com.example.examination.util.Result;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.File;
+
+@Slf4j
+@RestController
+public class CommonController {
+
+    @GetMapping("backup")
+    public boolean backup() {
+        log.info("开始备份数据...");
+        try {
+            String command = "cmd /c mysqldump -u root -proot examination > D:/examination.sql";
+            Runtime.getRuntime().exec(command);
+        } catch (Exception e) {
+            log.error("备份数据失败", e);
+            return false;
+        }
+        return true;
+    }
+
+    @GetMapping("restore")
+    public Result restore() {
+        log.info("开始恢复数据...");
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            File file = new File("D:/examination.sql");
+            if (!file.exists()) {
+                log.warn("sql文件不存在！");
+                builder.code(-1).msg("sql文件不存在");
+            } else {
+                String command = "cmd /c mysql -u root -proot examination < D:/examination.sql";
+                Runtime.getRuntime().exec(command);
+            }
+        } catch (Exception e) {
+            log.error("恢复数据失败", e);
+            builder.code(-1).msg("恢复数据失败");
+        }
+        return builder.build();
+    }
+
+}
+
+
+
+package com.example.examination.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * 用户id、班级id对应关系
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UidCid {
+    private Integer uid;
+    private Integer cid;
+}
+
+
 package com.example.examination.dao;
 
-import com.example.examination.controller.model.PublishReq;
-import com.example.examination.entity.Publish;
+import com.example.examination.entity.UidCid;
 
 import java.util.List;
 
-public interface PublishMapper {
-    int deleteByPrimaryKey(Integer id);
+public interface UidCidMapper {
+    int deleteByPrimaryKey(Integer uid);
 
-    int insert(Publish record);
+    int insert(UidCid record);
 
-    int insertSelective(Publish record);
+    int insertSelective(UidCid record);
 
-    Publish selectByPrimaryKey(Integer id);
+    UidCid selectByPrimaryKey(Integer uid);
 
-    int updateByPrimaryKeySelective(Publish record);
+    int updateByPrimaryKeySelective(UidCid record);
 
-    int updateByPrimaryKey(Publish record);
+    int updateByPrimaryKey(UidCid record);
 
-    int count(PublishReq req);
+    UidCid selectByUidAndCid(Integer uid, Integer cid);
 
-    List<Publish> select(PublishReq req);
+    List<UidCid> selectByCid(Integer cid);
 }
