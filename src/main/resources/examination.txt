@@ -16,6 +16,20 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`examination` /*!40100 DEFAULT CHARACTER
 
 USE `examination`;
 
+/*Table structure for table `class` */
+
+DROP TABLE IF EXISTS `class`;
+
+CREATE TABLE `class` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `classname` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+
+/*Data for the table `class` */
+
+insert  into `class`(`id`,`classname`) values (1,'大一1班'),(2,'大一2班'),(3,'大一3班'),(4,'大一4班');
+
 /*Table structure for table `examination` */
 
 DROP TABLE IF EXISTS `examination`;
@@ -85,11 +99,25 @@ CREATE TABLE `reply` (
   `submit_ts` varchar(255) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 
 /*Data for the table `reply` */
 
-insert  into `reply`(`id`,`answer`,`correct`,`error`,`paper_id`,`publish_id`,`submit_ts`,`user_id`) values (1,'{\"1\":\"A\",\"2\":\"C\",\"7\":\"aaa\",\"10\":\"aaa\",\"11\":\"qaa\",\"12\":\"B\"}','1,12,2','11,7,10',4,4,'2020-04-20 20:08:04',3);
+insert  into `reply`(`id`,`answer`,`correct`,`error`,`paper_id`,`publish_id`,`submit_ts`,`user_id`) values (1,'{\"1\":\"A\",\"2\":\"C\",\"7\":\"aaa\",\"10\":\"aaa\",\"11\":\"qaa\",\"12\":\"B\"}','1,12,2','11,7,10',4,4,'2020-04-20 20:08:04',3),(2,'{\"1\":\"A\",\"2\":\"A\",\"7\":\"A\",\"8\":\"A\",\"9\":\"A\",\"10\":\"A\",\"11\":\"A\",\"12\":\"A\"}','1','11,12,2,7,8,9,10',3,5,'2020-04-21 15:59:53',3);
+
+/*Table structure for table `uid_cid` */
+
+DROP TABLE IF EXISTS `uid_cid`;
+
+CREATE TABLE `uid_cid` (
+  `uid` int(11) NOT NULL,
+  `cid` int(11) NOT NULL,
+  PRIMARY KEY (`uid`,`cid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Data for the table `uid_cid` */
+
+insert  into `uid_cid`(`uid`,`cid`) values (8,1),(10,1),(12,2),(13,4);
 
 /*Table structure for table `user` */
 
@@ -101,11 +129,11 @@ CREATE TABLE `user` (
   `role` varchar(20) DEFAULT NULL,
   `username` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 
 /*Data for the table `user` */
 
-insert  into `user`(`id`,`password`,`role`,`username`) values (1,'admin','ADMIN','admin'),(2,'12345678','TEACHER','jack'),(3,'111111','STUDENT','stu_test'),(4,'654321','TEACHER','peter');
+insert  into `user`(`id`,`password`,`role`,`username`) values (1,'admin','ADMIN','admin'),(2,'12345678','TEACHER','jack'),(3,'111111','STUDENT','stu_test'),(4,'654321','TEACHER','peter'),(6,'666666','STUDENT','Bob'),(7,'666666','STUDENT','lucy'),(8,'666666','STUDENT','小明'),(9,'666666','STUDENT','小红'),(10,'666666','STUDENT','小红'),(11,'666666','STUDENT','小王'),(12,'666666','STUDENT','小花'),(13,'666666','STUDENT','小白');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
