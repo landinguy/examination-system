@@ -60,12 +60,13 @@ CREATE TABLE `paper` (
   `title` varchar(255) DEFAULT NULL,
   `status` tinyint(2) DEFAULT NULL,
   `publish_ts` varchar(255) DEFAULT NULL,
+  `score` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 /*Data for the table `paper` */
 
-insert  into `paper`(`id`,`create_ts`,`creator_id`,`examinations`,`title`,`status`,`publish_ts`) values (3,'2020-04-19',2,'12,11,10,9,8,7,2,1','试卷1',2,'2020-04-19 23:30:42'),(4,'2020-04-19',2,'12,2,1,11,10,7','试卷2',2,'2020-04-19 23:18:17');
+insert  into `paper`(`id`,`create_ts`,`creator_id`,`examinations`,`title`,`status`,`publish_ts`,`score`) values (6,'2020-04-22',2,'12,2,1,9,8','试卷1',2,'2020-04-22 16:47:14',12);
 
 /*Table structure for table `publish` */
 
@@ -79,11 +80,11 @@ CREATE TABLE `publish` (
   `publish_ts` varchar(255) DEFAULT NULL,
   `publisher_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 /*Data for the table `publish` */
 
-insert  into `publish`(`id`,`answer_ts`,`limit_answer_time`,`paper_id`,`publish_ts`,`publisher_id`) values (4,30,'',4,'2020-04-19 23:18:17',2),(5,30,'',3,'2020-04-19 23:30:42',2);
+insert  into `publish`(`id`,`answer_ts`,`limit_answer_time`,`paper_id`,`publish_ts`,`publisher_id`) values (6,30,'',6,'2020-04-22 16:47:14',2);
 
 /*Table structure for table `reply` */
 
@@ -98,12 +99,13 @@ CREATE TABLE `reply` (
   `publish_id` int(11) DEFAULT NULL,
   `submit_ts` varchar(255) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
+  `score` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 
 /*Data for the table `reply` */
 
-insert  into `reply`(`id`,`answer`,`correct`,`error`,`paper_id`,`publish_id`,`submit_ts`,`user_id`) values (1,'{\"1\":\"A\",\"2\":\"C\",\"7\":\"aaa\",\"10\":\"aaa\",\"11\":\"qaa\",\"12\":\"B\"}','1,12,2','11,7,10',4,4,'2020-04-20 20:08:04',3),(2,'{\"1\":\"A\",\"2\":\"A\",\"7\":\"A\",\"8\":\"A\",\"9\":\"A\",\"10\":\"A\",\"11\":\"A\",\"12\":\"A\"}','1','11,12,2,7,8,9,10',3,5,'2020-04-21 15:59:53',3);
+insert  into `reply`(`id`,`answer`,`correct`,`error`,`paper_id`,`publish_id`,`submit_ts`,`user_id`,`score`) values (5,'{\"1\":\"A\",\"2\":\"C\",\"8\":\"错\",\"9\":\"错\",\"12\":\"B\"}','1,12,2,8,9','',6,6,'2020-04-22 16:47:52',3,12),(6,'{\"1\":\"A\",\"2\":\"A\",\"8\":\"A\",\"9\":\"A\",\"12\":\"A\"}','1','12,2,8,9',6,6,'2020-04-22 17:50:22',15,1);
 
 /*Table structure for table `uid_cid` */
 
@@ -117,7 +119,7 @@ CREATE TABLE `uid_cid` (
 
 /*Data for the table `uid_cid` */
 
-insert  into `uid_cid`(`uid`,`cid`) values (8,1),(10,1),(12,2),(13,4);
+insert  into `uid_cid`(`uid`,`cid`) values (3,1),(8,1),(10,1),(12,2),(13,4);
 
 /*Table structure for table `user` */
 
@@ -129,11 +131,11 @@ CREATE TABLE `user` (
   `role` varchar(20) DEFAULT NULL,
   `username` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 
 /*Data for the table `user` */
 
-insert  into `user`(`id`,`password`,`role`,`username`) values (1,'admin','ADMIN','admin'),(2,'12345678','TEACHER','jack'),(3,'111111','STUDENT','stu_test'),(4,'654321','TEACHER','peter'),(6,'666666','STUDENT','Bob'),(7,'666666','STUDENT','lucy'),(8,'666666','STUDENT','小明'),(9,'666666','STUDENT','小红'),(10,'666666','STUDENT','小红'),(11,'666666','STUDENT','小王'),(12,'666666','STUDENT','小花'),(13,'666666','STUDENT','小白');
+insert  into `user`(`id`,`password`,`role`,`username`) values (1,'admin','ADMIN','admin'),(2,'12345678','TEACHER','jack'),(3,'111111','STUDENT','stu_test'),(4,'654321','TEACHER','peter'),(6,'666666','STUDENT','Bob'),(7,'666666','STUDENT','lucy'),(8,'666666','STUDENT','小明'),(9,'666666','STUDENT','小红'),(10,'666666','STUDENT','小红'),(11,'666666','STUDENT','小王'),(12,'666666','STUDENT','小花'),(13,'666666','STUDENT','小白'),(14,'666666','COMPANY','com_test'),(15,'666666','INTERVIEWER','interviewer_test');
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;

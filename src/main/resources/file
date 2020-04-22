@@ -1,62 +1,12 @@
-package com.example.examination.entity;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-
-@Data
-@Table
-@Entity
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private String username;
-    @Builder.Default
-    private String password = "666666";
-    private String role;
-}
-
-
-
---------------------------
-
-package com.example.examination.entity;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
-
-@Data
-@Table
-@Entity
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Class {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    private String classname;
-}
-
-
-
 package com.example.examination.controller;
 
 import com.example.examination.service.ClassService;
 import com.example.examination.util.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
@@ -131,12 +81,12 @@ public class ClassController {
         return builder.build();
     }
 
-    @PostMapping("apply")
+    @GetMapping("apply")
     public Result apply(Integer userId, Integer classId) {
         log.info("班级申请,userId#{},classId#{}", userId, classId);
         Result.ResultBuilder builder = Result.builder();
         try {
-            classService.apply(userId, classId);
+            return classService.apply(userId, classId);
         } catch (Exception e) {
             log.error("班级申请失败", e);
             builder.code(-1).msg("班级申请失败").build();
@@ -144,31 +94,6 @@ public class ClassController {
         return builder.build();
     }
 
-}
-
-
-package com.example.examination.dao;
-
-import com.example.examination.entity.Class;
-
-import java.util.List;
-
-public interface ClassMapper {
-    int deleteByPrimaryKey(Integer id);
-
-    int insert(Class record);
-
-    int insertSelective(Class record);
-
-    Class selectByPrimaryKey(Integer id);
-
-    int updateByPrimaryKeySelective(Class record);
-
-    int updateByPrimaryKey(Class record);
-
-    Class selectByClassname(String classname);
-
-    List<Class> select();
 }
 
 
@@ -219,8 +144,16 @@ public class ClassService {
         return classMapper.select();
     }
 
-    public void apply(Integer userId, Integer classId) {
-        uidCidMapper.insertSelective(UidCid.builder().uid(userId).cid(classId).build());
+    public Result apply(Integer userId, Integer classId) {
+        Result.ResultBuilder builder = Result.builder();
+        UidCid uidCid = uidCidMapper.selectByPrimaryKey(userId);
+        if (uidCid != null) {
+            String classname = classMapper.selectByPrimaryKey(uidCid.getCid()).getClassname();
+            builder.code(-1).msg("您所在班级为【" + classname + "】,无需申请！");
+        } else {
+            uidCidMapper.insertSelective(UidCid.builder().uid(userId).cid(classId).build());
+        }
+        return builder.build();
     }
 
     public Object getClassStudent(Integer classId) {
@@ -253,53 +186,196 @@ public class ClassService {
 }
 
 
+package com.example.examination.entity;
 
-package com.example.examination.controller;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import com.example.examination.util.Result;
+import javax.persistence.*;
+
+@Data
+@Table
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Paper {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private Integer creatorId;
+    private Integer status;//1.未发布 2.已发布
+    private String title;
+    private String createTs;//创建时间
+    private String publishTs;//发布时间
+    private String examinations;//试题
+    private Integer score;//试卷总分
+}
+
+
+package com.example.examination.dao;
+
+import com.example.examination.controller.model.PaperReq;
+import com.example.examination.entity.Paper;
+
+import java.util.List;
+
+public interface PaperMapper {
+    int deleteByPrimaryKey(Integer id);
+
+    int insert(Paper record);
+
+    int insertSelective(Paper record);
+
+    Paper selectByPrimaryKey(Integer id);
+
+    int updateByPrimaryKeySelective(Paper record);
+
+    int updateByPrimaryKey(Paper record);
+
+    Integer count(PaperReq req);
+
+    List<Paper> select(PaperReq req);
+}
+
+
+package com.example.examination.service;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.example.examination.controller.model.PaperCreateReq;
+import com.example.examination.controller.model.PaperPublishReq;
+import com.example.examination.controller.model.PaperReq;
+import com.example.examination.controller.model.PublishReq;
+import com.example.examination.dao.ExaminationMapper;
+import com.example.examination.dao.PaperMapper;
+import com.example.examination.dao.PublishMapper;
+import com.example.examination.entity.Examination;
+import com.example.examination.entity.Paper;
+import com.example.examination.entity.Publish;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Service;
 
-import java.io.File;
+import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
-@RestController
-public class CommonController {
+@Service
+public class PaperService {
+    @Resource
+    private PaperMapper paperMapper;
+    @Resource
+    private CommonService commonService;
+    @Resource
+    private UserService userService;
+    @Resource
+    private PublishMapper publishMapper;
+    @Resource
+    private ExaminationMapper examinationMapper;
 
-    @GetMapping("backup")
-    public boolean backup() {
-        log.info("开始备份数据...");
-        try {
-            String command = "cmd /c mysqldump -u root -proot examination > D:/examination.sql";
-            Runtime.getRuntime().exec(command);
-        } catch (Exception e) {
-            log.error("备份数据失败", e);
-            return false;
+    public void save(PaperCreateReq req) {
+        int score = 0;
+        for (String id : req.getExaminations()) {
+            Examination examination = examinationMapper.selectByPrimaryKey(Integer.valueOf(id));
+            if (examination != null) score += examination.getDifficulty();
         }
-        return true;
+        Paper build = Paper.builder().title(req.getTitle()).createTs(LocalDate.now().toString()).status(1)
+                .creatorId(commonService.getUserId()).examinations(String.join(",", req.getExaminations())).score(score).build();
+        paperMapper.insertSelective(build);
     }
 
-    @GetMapping("restore")
-    public Result restore() {
-        log.info("开始恢复数据...");
-        Result.ResultBuilder builder = Result.builder();
-        try {
-            File file = new File("D:/examination.sql");
-            if (!file.exists()) {
-                log.warn("sql文件不存在！");
-                builder.code(-1).msg("sql文件不存在");
-            } else {
-                String command = "cmd /c mysql -u root -proot examination < D:/examination.sql";
-                Runtime.getRuntime().exec(command);
-            }
-        } catch (Exception e) {
-            log.error("恢复数据失败", e);
-            builder.code(-1).msg("恢复数据失败");
+    public void publish(PaperPublishReq req) {
+        Integer paperId = req.getPaperId();
+        String datetime = LocalDateTime.now().withNano(0).toString().replace("T", " ");
+        Publish build = Publish.builder().paperId(paperId).publisherId(commonService.getUserId())
+                .publishTs(datetime).limitAnswerTime(req.isLimitAnswerTime()).answerTs(req.getAnswerTs()).build();
+        int i = publishMapper.insertSelective(build);
+        if (i > 0) {
+            Paper paper = Paper.builder().id(paperId).status(2).publishTs(datetime).build();
+            paperMapper.updateByPrimaryKeySelective(paper);
         }
-        return builder.build();
     }
 
+    public Object get(PaperReq req) {
+        if (req.getPageNo() == null) req.setPageNo(1);
+        if (req.getPageSize() == null) req.setPageSize(10);
+        Integer userId = commonService.getUserId();
+        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
+            String role = it.getRole();
+            if (role.equals("TEACHER") || role.equals("COMPANY")) req.setCreatorId(userId);
+        });
+        log.info("查询试卷,req#{}", req);
+        Integer total = paperMapper.count(req);
+        List<JSONObject> list = paperMapper.select(req).stream().map(it -> {
+            JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
+            List<Examination> examinations = new ArrayList<>();
+            Stream.of(it.getExaminations().split(",")).map(Integer::valueOf).forEach(id ->
+                    Optional.ofNullable(examinationMapper.selectByPrimaryKey(id)).ifPresent(examinations::add)
+            );
+            jo.put("examinations", examinations);
+            return jo;
+        }).collect(Collectors.toList());
+        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
+    }
+
+    public JSONObject getByPaperId(Integer paperId) {
+        final JSONObject jo = new JSONObject();
+        Optional.ofNullable(paperMapper.selectByPrimaryKey(paperId)).ifPresent(it -> {
+            List<Examination> examinations = new ArrayList<>();
+            Stream.of(it.getExaminations().split(",")).map(Integer::valueOf).forEach(id ->
+                    Optional.ofNullable(examinationMapper.selectByPrimaryKey(id)).ifPresent(examinations::add)
+            );
+            jo.putAll(JSON.parseObject(JSON.toJSONString(it)));
+            jo.put("examinations", examinations);
+        });
+        return jo;
+    }
+
+    public Object getPublishRecord(PublishReq req) {
+        if (req.getPageNo() == null) req.setPageNo(1);
+        if (req.getPageSize() == null) req.setPageSize(10);
+        Integer userId = commonService.getUserId();
+        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
+            String role = it.getRole();
+            if (role.equals("TEACHER") || role.equals("COMPANY")) req.setPublisherId(userId);
+        });
+        log.info("查询发布记录,req#{}", req);
+        int total = publishMapper.count(req);
+        List<JSONObject> list = publishMapper.select(req).stream().map(it -> {
+            JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
+            Optional.ofNullable(userService.getById(it.getPublisherId())).ifPresent(user -> jo.put("username", user.getUsername()));
+            Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> jo.put("title", paper.getTitle()));
+            return jo;
+        }).collect(Collectors.toList());
+        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
+    }
+
+//    public JSONObject get(ExaminationReq req) {
+//        if (req.getPageNo() == null) req.setPageNo(1);
+//        if (req.getPageSize() == null) req.setPageSize(10);
+//        Integer userId = commonService.getUserId();
+//        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
+//            String role = it.getRole();
+//            if (role.equals("TEACHER") || role.equals("COMPANY")) req.setCreatorId(userId);
+//        });
+//        log.info("查询试题,req#{}", req);
+//        Integer total = examinationMapper.count(req);
+//        List<Examination> list = examinationMapper.select(req);
+//        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
+//    }
+//
+//    public void delete(Integer id) {
+//        examinationMapper.deleteByPrimaryKey(id);
+//    }
 }
 
 
@@ -311,39 +387,160 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.*;
+
 /**
- * 用户id、班级id对应关系
+ * 答题记录
  */
 @Data
+@Table
+@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UidCid {
-    private Integer uid;
-    private Integer cid;
+public class Reply {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    private Integer paperId;//试卷id
+    private Integer publishId;//发布记录id
+    private Integer userId;//答题人id
+    private String submitTs;//试卷提交时间
+    private String correct;//正确题id
+    private String error;//错误题id
+    private String answer;//答案
+    private Integer score;//得分
 }
 
 
 package com.example.examination.dao;
 
-import com.example.examination.entity.UidCid;
+import com.example.examination.controller.model.ReplyReq;
+import com.example.examination.entity.Reply;
 
 import java.util.List;
 
-public interface UidCidMapper {
-    int deleteByPrimaryKey(Integer uid);
+public interface ReplyMapper {
+    int deleteByPrimaryKey(Integer id);
 
-    int insert(UidCid record);
+    int insert(Reply record);
 
-    int insertSelective(UidCid record);
+    int insertSelective(Reply record);
 
-    UidCid selectByPrimaryKey(Integer uid);
+    Reply selectByPrimaryKey(Integer id);
 
-    int updateByPrimaryKeySelective(UidCid record);
+    int updateByPrimaryKeySelective(Reply record);
 
-    int updateByPrimaryKey(UidCid record);
+    int updateByPrimaryKey(Reply record);
 
-    UidCid selectByUidAndCid(Integer uid, Integer cid);
+    int count(ReplyReq req);
 
-    List<UidCid> selectByCid(Integer cid);
+    List<Reply> select(ReplyReq req);
+}
+
+
+package com.example.examination.controller.model;
+
+import lombok.Data;
+
+@Data
+public class ReplyReq {
+    private Integer pageNo;
+    private Integer pageSize;
+    private Integer userId;//答题人id
+    private Integer paperId;
+    private Integer publishId;
+}
+
+
+package com.example.examination.service;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
+import com.example.examination.controller.model.ReplyCreateReq;
+import com.example.examination.controller.model.ReplyReq;
+import com.example.examination.dao.ExaminationMapper;
+import com.example.examination.dao.PaperMapper;
+import com.example.examination.dao.PublishMapper;
+import com.example.examination.dao.ReplyMapper;
+import com.example.examination.entity.Reply;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+@Slf4j
+@Service
+public class ReplyService {
+    @Resource
+    private PaperMapper paperMapper;
+    @Resource
+    private CommonService commonService;
+    @Resource
+    private UserService userService;
+    @Resource
+    private ExaminationMapper examinationMapper;
+    @Resource
+    private ReplyMapper replyMapper;
+    @Resource
+    private PublishMapper publishMapper;
+
+    public void save(ReplyCreateReq req) {
+        List<String> correct = new ArrayList<>();
+        List<String> error = new ArrayList<>();
+        AtomicInteger score = new AtomicInteger();
+        Optional.ofNullable(req.getAnswer()).ifPresent(answer -> {
+            Map<String, String> map = JSON.parseObject(answer, new TypeReference<Map<String, String>>() {
+            });
+            map.forEach((id, value) ->
+                    Optional.ofNullable(examinationMapper.selectByPrimaryKey(Integer.valueOf(id))).ifPresent(it -> {
+                        if (value.equals(it.getAnswer())) {
+                            correct.add(id);
+                            score.addAndGet(it.getDifficulty());
+                        } else error.add(id);
+                    })
+            );
+        });
+        Reply build = Reply.builder().paperId(req.getPaperId()).publishId(req.getPublishId()).answer(req.getAnswer()).userId(commonService.getUserId())
+                .submitTs(commonService.getDateTime()).correct(String.join(",", correct)).error(String.join(",", error)).score(score.get()).build();
+        replyMapper.insertSelective(build);
+    }
+
+
+    public Object get(ReplyReq req) {
+        if (req.getPageNo() == null) req.setPageNo(1);
+        if (req.getPageSize() == null) req.setPageSize(10);
+        Integer userId = commonService.getUserId();
+        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
+            String role = it.getRole();
+            //学生只能查看自己的答题记录
+            if (role.equals("STUDENT") || role.equals("INTERVIEWER")) req.setUserId(userId);
+        });
+        log.info("查询答题记录,req#{}", req);
+        Integer total = replyMapper.count(req);
+        List<JSONObject> list = replyMapper.select(req).stream().map(it -> {
+            JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
+            Optional.ofNullable(userService.getById(it.getUserId())).ifPresent(user -> jo.put("username", user.getUsername()));
+            Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> {
+                jo.put("title", paper.getTitle());
+                jo.put("totalScore", paper.getScore());
+            });
+            long correctNum = StringUtils.isEmpty(it.getCorrect()) ? 0 : Stream.of(it.getCorrect().split(",")).count();
+            jo.put("correctNum", correctNum);
+            long errorNum = StringUtils.isEmpty(it.getError()) ? 0 : Stream.of(it.getError().split(",")).count();
+            jo.put("errorNum", errorNum);
+            return jo;
+        }).collect(Collectors.toList());
+        return new JSONObject().fluentPut("total", total).fluentPut("list", list);
+    }
+
 }
