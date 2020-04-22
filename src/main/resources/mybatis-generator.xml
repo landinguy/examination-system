@@ -35,25 +35,25 @@
         <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
         <!--               selectByExampleQueryId="false">-->
         <!--        </table>-->
-        <!--        <table tableName="paper" domainObjectName="Paper" enableCountByExample="false"-->
-        <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
-        <!--               selectByExampleQueryId="false">-->
-        <!--        </table>-->
+        <!--                <table tableName="paper" domainObjectName="Paper" enableCountByExample="false"-->
+        <!--                       enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
+        <!--                       selectByExampleQueryId="false">-->
+        <!--                </table>-->
         <!--        <table tableName="publish" domainObjectName="Publish" enableCountByExample="false"-->
         <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
         <!--               selectByExampleQueryId="false">-->
         <!--        </table>-->
-        <!--        <table tableName="reply" domainObjectName="Reply" enableCountByExample="false"-->
+                <table tableName="reply" domainObjectName="Reply" enableCountByExample="false"
+                       enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
+                       selectByExampleQueryId="false">
+                </table>
+        <!--        <table tableName="class" domainObjectName="Class" enableCountByExample="false"-->
         <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
         <!--               selectByExampleQueryId="false">-->
         <!--        </table>-->
-        <table tableName="class" domainObjectName="Class" enableCountByExample="false"
-               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
-               selectByExampleQueryId="false">
-        </table>
-        <table tableName="uid_cid" domainObjectName="UidCid" enableCountByExample="false"
-               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"
-               selectByExampleQueryId="false">
-        </table>
+        <!--        <table tableName="uid_cid" domainObjectName="UidCid" enableCountByExample="false"-->
+        <!--               enableUpdateByExample="false" enableDeleteByExample="false" enableSelectByExample="false"-->
+        <!--               selectByExampleQueryId="false">-->
+        <!--        </table>-->
     </context>
 </generatorConfiguration>
