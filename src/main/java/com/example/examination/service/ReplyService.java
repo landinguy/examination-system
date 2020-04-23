@@ -7,9 +7,11 @@ import com.example.examination.controller.model.ReplyCreateReq;
 import com.example.examination.controller.model.ReplyReq;
 import com.example.examination.dao.ExaminationMapper;
 import com.example.examination.dao.PaperMapper;
+import com.example.examination.dao.PublishMapper;
 import com.example.examination.dao.ReplyMapper;
 import com.example.examination.entity.Reply;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,22 +36,27 @@ public class ReplyService {
     private ExaminationMapper examinationMapper;
     @Resource
     private ReplyMapper replyMapper;
+    @Resource
+    private PublishMapper publishMapper;
 
     public void save(ReplyCreateReq req) {
         List<String> correct = new ArrayList<>();
         List<String> error = new ArrayList<>();
+        AtomicInteger score = new AtomicInteger();
         Optional.ofNullable(req.getAnswer()).ifPresent(answer -> {
             Map<String, String> map = JSON.parseObject(answer, new TypeReference<Map<String, String>>() {
             });
             map.forEach((id, value) ->
                     Optional.ofNullable(examinationMapper.selectByPrimaryKey(Integer.valueOf(id))).ifPresent(it -> {
-                        if (value.equals(it.getAnswer())) correct.add(id);
-                        else error.add(id);
+                        if (value.equals(it.getAnswer())) {
+                            correct.add(id);
+                            score.addAndGet(it.getDifficulty());
+                        } else error.add(id);
                     })
             );
         });
         Reply build = Reply.builder().paperId(req.getPaperId()).publishId(req.getPublishId()).answer(req.getAnswer()).userId(commonService.getUserId())
-                .submitTs(commonService.getDateTime()).correct(String.join(",", correct)).error(String.join(",", error)).build();
+                .submitTs(commonService.getDateTime()).correct(String.join(",", correct)).error(String.join(",", error)).score(score.get()).build();
         replyMapper.insertSelective(build);
     }
 
@@ -59,6 +67,7 @@ public class ReplyService {
         Integer userId = commonService.getUserId();
         Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
             String role = it.getRole();
+            //学生只能查看自己的答题记录
             if (role.equals("STUDENT") || role.equals("INTERVIEWER")) req.setUserId(userId);
         });
         log.info("查询答题记录,req#{}", req);
@@ -66,9 +75,14 @@ public class ReplyService {
         List<JSONObject> list = replyMapper.select(req).stream().map(it -> {
             JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
             Optional.ofNullable(userService.getById(it.getUserId())).ifPresent(user -> jo.put("username", user.getUsername()));
-            Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> jo.put("title", paper.getTitle()));
-            jo.put("correctNum", Stream.of(it.getCorrect().split(",")).count());
-            jo.put("errorNum", Stream.of(it.getError().split(",")).count());
+            Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> {
+                jo.put("title", paper.getTitle());
+                jo.put("totalScore", paper.getScore());
+            });
+            long correctNum = StringUtils.isEmpty(it.getCorrect()) ? 0 : Stream.of(it.getCorrect().split(",")).count();
+            jo.put("correctNum", correctNum);
+            long errorNum = StringUtils.isEmpty(it.getError()) ? 0 : Stream.of(it.getError().split(",")).count();
+            jo.put("errorNum", errorNum);
             return jo;
         }).collect(Collectors.toList());
         return new JSONObject().fluentPut("total", total).fluentPut("list", list);

@@ -44,8 +44,16 @@ public class ClassService {
         return classMapper.select();
     }
 
-    public void apply(Integer userId, Integer classId) {
-        uidCidMapper.insertSelective(UidCid.builder().uid(userId).cid(classId).build());
+    public Result apply(Integer userId, Integer classId) {
+        Result.ResultBuilder builder = Result.builder();
+        UidCid uidCid = uidCidMapper.selectByPrimaryKey(userId);
+        if (uidCid != null) {
+            String classname = classMapper.selectByPrimaryKey(uidCid.getCid()).getClassname();
+            builder.code(-1).msg("您所在班级为【" + classname + "】,无需申请！");
+        } else {
+            uidCidMapper.insertSelective(UidCid.builder().uid(userId).cid(classId).build());
+        }
+        return builder.build();
     }
 
     public Object getClassStudent(Integer classId) {

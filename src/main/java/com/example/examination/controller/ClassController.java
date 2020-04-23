@@ -3,7 +3,10 @@ package com.example.examination.controller;
 import com.example.examination.service.ClassService;
 import com.example.examination.util.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 
@@ -78,12 +81,12 @@ public class ClassController {
         return builder.build();
     }
 
-    @PostMapping("apply")
+    @GetMapping("apply")
     public Result apply(Integer userId, Integer classId) {
         log.info("班级申请,userId#{},classId#{}", userId, classId);
         Result.ResultBuilder builder = Result.builder();
         try {
-            classService.apply(userId, classId);
+            return classService.apply(userId, classId);
         } catch (Exception e) {
             log.error("班级申请失败", e);
             builder.code(-1).msg("班级申请失败").build();

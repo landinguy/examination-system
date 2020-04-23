@@ -27,4 +27,5 @@ public class Reply {
     private String correct;//正确题id
     private String error;//错误题id
     private String answer;//答案
+    private Integer score;//得分
 }

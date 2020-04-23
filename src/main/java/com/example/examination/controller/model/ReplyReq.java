@@ -8,4 +8,5 @@ public class ReplyReq {
     private Integer pageSize;
     private Integer userId;//答题人id
     private Integer paperId;
+    private Integer publishId;
 }

@@ -39,8 +39,13 @@ public class PaperService {
     private ExaminationMapper examinationMapper;
 
     public void save(PaperCreateReq req) {
+        int score = 0;
+        for (String id : req.getExaminations()) {
+            Examination examination = examinationMapper.selectByPrimaryKey(Integer.valueOf(id));
+            if (examination != null) score += examination.getDifficulty();
+        }
         Paper build = Paper.builder().title(req.getTitle()).createTs(LocalDate.now().toString()).status(1)
-                .creatorId(commonService.getUserId()).examinations(String.join(",", req.getExaminations())).build();
+                .creatorId(commonService.getUserId()).examinations(String.join(",", req.getExaminations())).score(score).build();
         paperMapper.insertSelective(build);
     }
 

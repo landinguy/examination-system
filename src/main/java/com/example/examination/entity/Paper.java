@@ -24,4 +24,5 @@ public class Paper {
     private String createTs;//创建时间
     private String publishTs;//发布时间
     private String examinations;//试题
+    private Integer score;//试卷总分
 }
