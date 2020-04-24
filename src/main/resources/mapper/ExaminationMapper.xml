@@ -8,9 +8,10 @@
         <result column="creator_id" jdbcType="INTEGER" property="creatorId"/>
         <result column="difficulty" jdbcType="INTEGER" property="difficulty"/>
         <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="score" jdbcType="INTEGER" property="score"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id, answer, content, creator_id, difficulty, type
+    id, answer, content, creator_id, difficulty, type,score
   </sql>
     <select id="count" resultType="Integer">
         select count(*) from examination
@@ -46,10 +47,10 @@
   </delete>
     <insert id="insert" parameterType="com.example.examination.entity.Examination">
     insert into examination (id, answer, content, 
-      creator_id, difficulty, type
+      creator_id, difficulty, type,score
       )
     values (#{id,jdbcType=INTEGER}, #{answer,jdbcType=VARCHAR}, #{content,jdbcType=VARCHAR}, 
-      #{creatorId,jdbcType=INTEGER}, #{difficulty,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}
+      #{creatorId,jdbcType=INTEGER}, #{difficulty,jdbcType=INTEGER}, #{type,jdbcType=INTEGER},#{score,jdbcType=INTEGER}
       )
   </insert>
     <insert id="insertSelective" parameterType="com.example.examination.entity.Examination">
@@ -73,6 +74,9 @@
             <if test="type != null">
                 type,
             </if>
+            <if test="score != null">
+                score,
+            </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -92,6 +96,9 @@
             </if>
             <if test="type != null">
                 #{type,jdbcType=INTEGER},
+            </if>
+            <if test="score != null">
+                #{score,jdbcType=INTEGER},
             </if>
         </trim>
     </insert>
@@ -113,6 +120,9 @@
             <if test="type != null">
                 type = #{type,jdbcType=INTEGER},
             </if>
+            <if test="score != null">
+                score = #{score,jdbcType=INTEGER},
+            </if>
         </set>
         where id = #{id,jdbcType=INTEGER}
     </update>
@@ -122,7 +132,8 @@
       content = #{content,jdbcType=VARCHAR},
       creator_id = #{creatorId,jdbcType=INTEGER},
       difficulty = #{difficulty,jdbcType=INTEGER},
-      type = #{type,jdbcType=INTEGER}
+      type = #{type,jdbcType=INTEGER},
+      score = #{score,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>

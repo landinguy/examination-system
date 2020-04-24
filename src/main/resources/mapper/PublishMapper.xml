@@ -7,10 +7,11 @@
         <result column="limit_answer_time" jdbcType="BIT" property="limitAnswerTime"/>
         <result column="paper_id" jdbcType="INTEGER" property="paperId"/>
         <result column="publish_ts" jdbcType="VARCHAR" property="publishTs"/>
+        <result column="end_ts" jdbcType="VARCHAR" property="endTs"/>
         <result column="publisher_id" jdbcType="INTEGER" property="publisherId"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id, answer_ts, limit_answer_time, paper_id, publish_ts, publisher_id
+    id, answer_ts, limit_answer_time, paper_id, publish_ts, publisher_id,end_ts
   </sql>
     <select id="count" resultType="Integer">
         select count(*) from publish
@@ -42,10 +43,10 @@
   </delete>
     <insert id="insert" parameterType="com.example.examination.entity.Publish">
     insert into publish (id, answer_ts, limit_answer_time, 
-      paper_id, publish_ts, publisher_id
+      paper_id, publish_ts,end_ts, publisher_id
       )
     values (#{id,jdbcType=INTEGER}, #{answerTs,jdbcType=BIGINT}, #{limitAnswerTime,jdbcType=BIT}, 
-      #{paperId,jdbcType=INTEGER}, #{publishTs,jdbcType=VARCHAR}, #{publisherId,jdbcType=INTEGER}
+      #{paperId,jdbcType=INTEGER}, #{publishTs,jdbcType=VARCHAR},#{endTs,jdbcType=VARCHAR}, #{publisherId,jdbcType=INTEGER}
       )
   </insert>
     <insert id="insertSelective" parameterType="com.example.examination.entity.Publish">
@@ -65,6 +66,9 @@
             </if>
             <if test="publishTs != null">
                 publish_ts,
+            </if>
+            <if test="endTs != null">
+                end_ts,
             </if>
             <if test="publisherId != null">
                 publisher_id,
@@ -86,6 +90,9 @@
             <if test="publishTs != null">
                 #{publishTs,jdbcType=VARCHAR},
             </if>
+            <if test="endTs != null">
+                #{endTs,jdbcType=VARCHAR},
+            </if>
             <if test="publisherId != null">
                 #{publisherId,jdbcType=INTEGER},
             </if>
@@ -106,6 +113,9 @@
             <if test="publishTs != null">
                 publish_ts = #{publishTs,jdbcType=VARCHAR},
             </if>
+            <if test="endTs != null">
+                end_ts = #{endTs,jdbcType=VARCHAR},
+            </if>
             <if test="publisherId != null">
                 publisher_id = #{publisherId,jdbcType=INTEGER},
             </if>
@@ -118,6 +128,7 @@
       limit_answer_time = #{limitAnswerTime,jdbcType=BIT},
       paper_id = #{paperId,jdbcType=INTEGER},
       publish_ts = #{publishTs,jdbcType=VARCHAR},
+      end_ts = #{endTs,jdbcType=VARCHAR},
       publisher_id = #{publisherId,jdbcType=INTEGER}
     where id = #{id,jdbcType=INTEGER}
   </update>

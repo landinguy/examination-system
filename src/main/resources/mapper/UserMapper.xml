@@ -6,10 +6,14 @@
         <result column="password" jdbcType="VARCHAR" property="password"/>
         <result column="role" jdbcType="VARCHAR" property="role"/>
         <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="account_name" jdbcType="VARCHAR" property="accountName"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id, password, role, username
+    id, password, role, username,account_name
   </sql>
+    <select id="isExist" resultType="int">
+         select count(*) from user where account_name=#{accountName}
+    </select>
     <select id="count" resultType="Integer">
         select count(*) from user
         <where>
@@ -31,7 +35,7 @@
     <select id="selectByUsernameAndPassword" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from user where username=#{username} and password=#{password}
+        from user where account_name=#{username} and password=#{password}
     </select>
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
@@ -44,12 +48,12 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
     <insert id="insert" parameterType="com.example.examination.entity.User">
-    insert into user (id, password, role, 
-      username)
+    insert into user (id, password, role, username,account_name)
     values (#{id,jdbcType=INTEGER}, #{password,jdbcType=VARCHAR}, #{role,jdbcType=VARCHAR},
-      #{username,jdbcType=VARCHAR})
+      #{username,jdbcType=VARCHAR}, #{accountName,jdbcType=VARCHAR})
   </insert>
-    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.example.examination.entity.User">
+    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id"
+            parameterType="com.example.examination.entity.User">
         insert into user
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">
@@ -63,6 +67,9 @@
             </if>
             <if test="username != null">
                 username,
+            </if>
+            <if test="accountName != null">
+                account_name,
             </if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
@@ -78,6 +85,9 @@
             <if test="username != null">
                 #{username,jdbcType=VARCHAR},
             </if>
+            <if test="accountName != null">
+                #{accountName,jdbcType=VARCHAR},
+            </if>
         </trim>
     </insert>
     <update id="updateByPrimaryKeySelective" parameterType="com.example.examination.entity.User">
@@ -92,6 +102,9 @@
             <if test="username != null">
                 username = #{username,jdbcType=VARCHAR},
             </if>
+            <if test="accountName != null">
+                account_name = #{accountName,jdbcType=VARCHAR},
+            </if>
         </set>
         where id = #{id,jdbcType=INTEGER}
     </update>
@@ -99,7 +112,8 @@
     update user
     set password = #{password,jdbcType=VARCHAR},
       role = #{role,jdbcType=VARCHAR},
-      username = #{username,jdbcType=VARCHAR}
+      username = #{username,jdbcType=VARCHAR},
+      account_name = #{accountName,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 </mapper>
