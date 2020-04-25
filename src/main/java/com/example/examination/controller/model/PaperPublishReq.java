@@ -7,4 +7,5 @@ public class PaperPublishReq {
     private Integer PaperId;
     private boolean limitAnswerTime;
     private Long answerTs;
+    private String endTs;
 }

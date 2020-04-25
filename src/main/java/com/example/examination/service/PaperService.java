@@ -53,7 +53,7 @@ public class PaperService {
         Integer paperId = req.getPaperId();
         String datetime = LocalDateTime.now().withNano(0).toString().replace("T", " ");
         Publish build = Publish.builder().paperId(paperId).publisherId(commonService.getUserId())
-                .publishTs(datetime).limitAnswerTime(req.isLimitAnswerTime()).answerTs(req.getAnswerTs()).build();
+                .publishTs(datetime).limitAnswerTime(req.isLimitAnswerTime()).answerTs(req.getAnswerTs()).endTs(req.getEndTs()).build();
         int i = publishMapper.insertSelective(build);
         if (i > 0) {
             Paper paper = Paper.builder().id(paperId).status(2).publishTs(datetime).build();

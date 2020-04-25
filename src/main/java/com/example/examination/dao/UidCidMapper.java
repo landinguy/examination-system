@@ -20,4 +20,6 @@ public interface UidCidMapper {
     UidCid selectByUidAndCid(Integer uid, Integer cid);
 
     List<UidCid> selectByCid(Integer cid);
+
+    List<UidCid> selectByUid(Integer uid);
 }

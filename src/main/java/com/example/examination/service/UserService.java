@@ -35,13 +35,21 @@ public class UserService {
         return Result.builder().code(-1).msg("用户名或者密码错误").build();
     }
 
-    public void add(User user) {
+    public Result add(User user) {
+        Result.ResultBuilder builder = Result.builder();
         Integer id = user.getId();
         if (id != null) {
             userMapper.updateByPrimaryKeySelective(user);
         } else {
-            userMapper.insertSelective(user);
+            String username = user.getUsername();
+            if (userMapper.isExist(username) > 0) {
+                builder.code(-1).msg("账号名已存在！");
+            } else {
+                user.setAccountName(username);
+                userMapper.insertSelective(user);
+            }
         }
+        return builder.build();
     }
 
     public Result delete(Integer id) {

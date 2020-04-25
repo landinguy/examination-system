@@ -43,11 +43,11 @@ public class ClassController {
     }
 
     @GetMapping("student/save")
-    public Result saveStudent(Integer classId, String name) {
-        log.info("添加学生,classId#{},name#{}", classId, name);
+    public Result saveStudent(Integer classId, String name, String accountName) {
+        log.info("添加学生,classId#{},name#{},accountName#{}", classId, name, accountName);
         Result.ResultBuilder builder = Result.builder();
         try {
-            classService.saveStudent(classId, name);
+            return classService.saveStudent(classId, name, accountName);
         } catch (Exception e) {
             log.error("添加学生失败", e);
             builder.code(-1).msg("添加学生失败").build();

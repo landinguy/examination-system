@@ -5,10 +5,7 @@ import com.example.examination.controller.model.ReplyReq;
 import com.example.examination.service.ReplyService;
 import com.example.examination.util.Result;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -40,6 +37,19 @@ public class ReplyController {
         } catch (Exception e) {
             log.error("查询答题记录失败", e);
             builder.code(-1).msg("查询答题记录失败").build();
+        }
+        return builder.build();
+    }
+
+    @GetMapping("analysis/{publishId}")
+    public Result analysis(@PathVariable Integer publishId) {
+        log.info("查询班级答题分析结果,publishId#{}", publishId);
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            builder.data(replyService.analysis(publishId));
+        } catch (Exception e) {
+            log.error("查询班级答题分析结果失败", e);
+            builder.code(-1).msg("查询班级答题分析结果失败").build();
         }
         return builder.build();
     }

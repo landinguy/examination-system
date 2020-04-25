@@ -8,6 +8,11 @@
     <sql id="Base_Column_List">
     uid, cid
   </sql>
+    <select id="selectByUid" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from uid_cid where uid=#{uid}
+    </select>
     <select id="selectByCid" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>

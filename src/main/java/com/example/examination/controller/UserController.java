@@ -41,7 +41,7 @@ public class UserController {
         log.info("添加或修改用户,user#{}", user);
         Result.ResultBuilder builder = Result.builder();
         try {
-            userService.add(user);
+            return userService.add(user);
         } catch (Exception e) {
             log.error("添加或修改用户失败,user#{}", user);
             builder.code(-1).msg("添加或修改用户失败");

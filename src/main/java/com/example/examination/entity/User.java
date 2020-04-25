@@ -18,6 +18,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String username;
+    private String accountName;
     @Builder.Default
     private String password = "666666";
     private String role;

@@ -16,4 +16,5 @@ public class Examination {
     private String answer;
     private Integer difficulty;
     private Integer type;
+    private Integer score;
 }

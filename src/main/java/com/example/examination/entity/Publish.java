@@ -23,4 +23,5 @@ public class Publish {
     @Builder.Default
     private boolean limitAnswerTime = false;//是否限制答题时间
     private Long answerTs;//答题时间
+    private String endTs;//答题截止时间
 }

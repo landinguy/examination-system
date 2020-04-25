@@ -23,4 +23,6 @@ public interface UserMapper {
     List<User> select(UserReq req);
 
     Integer count(UserReq req);
+
+    Integer isExist(String accountName);
 }

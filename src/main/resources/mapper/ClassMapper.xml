@@ -32,7 +32,7 @@
     insert into class (id, classname)
     values (#{id,jdbcType=INTEGER}, #{classname,jdbcType=VARCHAR})
   </insert>
-    <insert id="insertSelective" parameterType="com.example.examination.entity.Class">
+    <insert id="insertSelective" useGeneratedKeys="true" keyProperty="id" parameterType="com.example.examination.entity.Class">
         insert into class
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="id != null">

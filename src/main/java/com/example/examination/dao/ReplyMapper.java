@@ -21,4 +21,6 @@ public interface ReplyMapper {
     int count(ReplyReq req);
 
     List<Reply> select(ReplyReq req);
+
+    Reply selectByPublishIdAndUserId(Integer publishId, Integer userId);
 }

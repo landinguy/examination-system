@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,14 +35,25 @@ public class ClassService {
         if (select != null) {
             builder.code(-1).msg("班级已存在，请换个班级名！");
         } else {
-            classMapper.insertSelective(Class.builder().classname(classname).build());
+            Class build = Class.builder().classname(classname).build();
+            if (classMapper.insertSelective(build) > 0) {
+                UidCid uidCid = UidCid.builder().uid(commonService.getUserId()).cid(build.getId()).build();
+                uidCidMapper.insertSelective(uidCid);
+            }
         }
         return builder.build();
     }
 
 
     public Object get() {
-        return classMapper.select();
+        User user = userMapper.selectByPrimaryKey(commonService.getUserId());
+        if (user.getRole().equals("TEACHER")) {
+            return uidCidMapper.selectByUid(user.getId()).stream().map(it ->
+                    classMapper.selectByPrimaryKey(it.getCid())
+            ).collect(Collectors.toList());
+        } else {
+            return classMapper.select();
+        }
     }
 
     public Result apply(Integer userId, Integer classId) {
@@ -70,14 +82,20 @@ public class ClassService {
         return list;
     }
 
-    public void saveStudent(Integer classId, String name) {
-        User user = User.builder().username(name).role("STUDENT").build();
-        userMapper.insertSelective(user);
-        Optional.ofNullable(user.getId()).ifPresent(userId -> {
-            log.info("userId#{}", userId);
-            UidCid uidCid = UidCid.builder().uid(userId).cid(classId).build();
-            uidCidMapper.insertSelective(uidCid);
-        });
+    public Result saveStudent(Integer classId, String name, String accountName) {
+        Result.ResultBuilder builder = Result.builder();
+        if (userMapper.isExist(accountName) > 0) {
+            builder.code(-1).msg("账号名已存在！");
+        } else {
+            User user = User.builder().username(name).accountName(accountName).role("STUDENT").build();
+            userMapper.insertSelective(user);
+            Optional.ofNullable(user.getId()).ifPresent(userId -> {
+                log.info("userId#{}", userId);
+                UidCid uidCid = UidCid.builder().uid(userId).cid(classId).build();
+                uidCidMapper.insertSelective(uidCid);
+            });
+        }
+        return builder.build();
     }
 
     public void deleteStudent(Integer id) {

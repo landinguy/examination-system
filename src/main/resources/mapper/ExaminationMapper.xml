@@ -19,6 +19,7 @@
             <if test="type!=null">type = #{type}</if>
             <if test="difficulty!=null">and difficulty = #{difficulty}</if>
             <if test="creatorId!=null">and creator_id = #{creatorId}</if>
+            <if test="keyword!=null">and content like concat('%',#{keyword},'%')</if>
         </where>
     </select>
     <select id="select" resultMap="BaseResultMap">
@@ -29,6 +30,7 @@
             <if test="type!=null">type = #{type}</if>
             <if test="difficulty!=null">and difficulty = #{difficulty}</if>
             <if test="creatorId!=null">and creator_id = #{creatorId}</if>
+            <if test="keyword!=null">and content like concat('%',#{keyword},'%')</if>
         </where>
         order by id desc
         <if test="pageNo != null and pageSize != null">
