@@ -101,4 +101,9 @@ public class ClassService {
     public void deleteStudent(Integer id) {
         uidCidMapper.deleteByPrimaryKey(id);
     }
+
+    public String getClassName(Integer userId) {
+        return Optional.ofNullable(userId).map(it -> uidCidMapper.selectByPrimaryKey(it)).map(it -> classMapper.selectByPrimaryKey(it.getCid()))
+                .map(Class::getClassname).orElse(null);
+    }
 }

@@ -94,4 +94,17 @@ public class ClassController {
         return builder.build();
     }
 
+    @GetMapping("{userId}")
+    public Result getClassName(@PathVariable Integer userId) {
+        log.info("获取学生所在班级,userId#{}", userId);
+        Result.ResultBuilder builder = Result.builder();
+        try {
+            builder.data(classService.getClassName(userId));
+        } catch (Exception e) {
+            log.error("获取学生所在班级失败", e);
+            builder.code(-1).msg("获取学生所在班级失败").build();
+        }
+        return builder.build();
+    }
+
 }

@@ -12,6 +12,7 @@ import com.example.examination.dao.PublishMapper;
 import com.example.examination.entity.Examination;
 import com.example.examination.entity.Paper;
 import com.example.examination.entity.Publish;
+import com.example.examination.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -100,18 +101,28 @@ public class PaperService {
         if (req.getPageNo() == null) req.setPageNo(1);
         if (req.getPageSize() == null) req.setPageSize(10);
         Integer userId = commonService.getUserId();
-        Optional.ofNullable(userService.getById(userId)).ifPresent(it -> {
-            String role = it.getRole();
+        String role = null;
+        User u = userService.getById(userId);
+        if (u != null) {
+            role = u.getRole();
             if (role.equals("TEACHER") || role.equals("COMPANY")) req.setPublisherId(userId);
-        });
+        }
+
         log.info("查询发布记录,req#{}", req);
         int total = publishMapper.count(req);
         List<JSONObject> list = publishMapper.select(req).stream().map(it -> {
             JSONObject jo = JSON.parseObject(JSON.toJSONString(it));
-            Optional.ofNullable(userService.getById(it.getPublisherId())).ifPresent(user -> jo.put("username", user.getUsername()));
+            Optional.ofNullable(userService.getById(it.getPublisherId())).ifPresent(user -> {
+                jo.put("username", user.getUsername());
+                jo.put("role", user.getRole());
+            });
             Optional.ofNullable(paperMapper.selectByPrimaryKey(it.getPaperId())).ifPresent(paper -> jo.put("title", paper.getTitle()));
             return jo;
         }).collect(Collectors.toList());
+
+        if (role != null && role.equals("INTERVIEWER")) {
+            list = list.stream().filter(it -> it.getString("role").equals("COMPANY")).collect(Collectors.toList());
+        }
         return new JSONObject().fluentPut("total", total).fluentPut("list", list);
     }
 

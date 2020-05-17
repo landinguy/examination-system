@@ -20,11 +20,11 @@ server:
 
 log:
   level: INFO
-  #  path: C:/logs/examination-system
-  path: D:/logs/examination-system
+  path: C:/logs/examination-system
+#  path: D:/logs/examination-system
 
 cors:
-  allowedOrigins: 'http://192.168.2.181:8088'
-#  allowedOrigins: 'http://192.168.2.168:8088'
+#  allowedOrigins: 'http://192.168.2.181:8088'
+  allowedOrigins: 'http://192.168.2.168:8088'
 
 backupPath: C:/examination.sql
