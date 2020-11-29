@@ -22,7 +22,4 @@ log:
   level: INFO
   path: /root/applications/logs/examination-system
 
-cors:
-  allowedOrigins: 'http://49.234.19.183'
-
 backupPath: /root/applications/examination.sql
